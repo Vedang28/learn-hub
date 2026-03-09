@@ -52,10 +52,17 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { signOut } = useAuth();
-  const { isTeacher, isAdmin } = useUserRole();
+  const { isTeacher, isAdmin, isLoading } = useUserRole();
+  const location = useLocation();
 
-  const navItems = isAdmin ? adminNav : isTeacher ? teacherNav : studentNav;
-  const roleLabel = isAdmin ? "Admin" : isTeacher ? "Teacher" : null;
+  const currentPortal = location.pathname.startsWith("/admin")
+    ? "admin"
+    : location.pathname.startsWith("/teacher")
+    ? "teacher"
+    : "student";
+
+  const navItems = currentPortal === "admin" ? adminNav : currentPortal === "teacher" ? teacherNav : studentNav;
+  const roleLabel = currentPortal === "admin" ? "Admin" : currentPortal === "teacher" ? "Teacher" : null;
 
   return (
     <Sidebar collapsible="icon">
