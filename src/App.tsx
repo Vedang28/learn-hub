@@ -26,6 +26,7 @@ import TeacherCourseDetail from "./pages/teacher/TeacherCourseDetail";
 import TeacherSubmissions from "./pages/teacher/TeacherSubmissions";
 import AssignmentSubmissions from "./pages/teacher/AssignmentSubmissions";
 import TeacherLiveClasses from "./pages/teacher/TeacherLiveClasses";
+import TeacherStudents from "./pages/teacher/TeacherStudents";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminCourses from "./pages/admin/AdminCourses";
@@ -68,6 +69,7 @@ const App = () => (
               <Route path="/teacher/courses/:courseId/assignments/:assignmentId/submissions" element={<AssignmentSubmissions />} />
               <Route path="/teacher/submissions" element={<TeacherSubmissions />} />
               <Route path="/teacher/live-classes" element={<TeacherLiveClasses />} />
+              <Route path="/teacher/students" element={<TeacherStudents />} />
 
               {/* Admin routes */}
               <Route path="/admin" element={<AdminDashboard />} />

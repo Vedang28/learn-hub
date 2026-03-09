@@ -34,6 +34,7 @@ const studentNav = [
 const teacherNav = [
   { title: "Dashboard", url: "/teacher", icon: LayoutDashboard },
   { title: "My Courses", url: "/teacher/courses", icon: BookOpen },
+  { title: "My Students", url: "/teacher/students", icon: Users },
   { title: "Create Course", url: "/teacher/courses/new", icon: PlusCircle },
   { title: "Submissions", url: "/teacher/submissions", icon: FileEdit },
   { title: "Live Classes", url: "/teacher/live-classes", icon: Video },
