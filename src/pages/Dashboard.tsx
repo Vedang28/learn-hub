@@ -3,9 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, ClipboardCheck, Video, Bell } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { BookOpen, ClipboardCheck, Video, Bell, Award } from "lucide-react";
 import { Link } from "react-router-dom";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -63,6 +64,21 @@ export default function Dashboard() {
       return data ?? [];
     },
     enabled: !!enrollments && enrollments.length > 0,
+  });
+
+  const { data: recentGrades } = useQuery({
+    queryKey: ["recent-grades", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("submissions")
+        .select("*, assignments(title, max_score, course_id, courses(title))")
+        .eq("student_id", user!.id)
+        .not("grade", "is", null)
+        .order("graded_at", { ascending: false })
+        .limit(5);
+      return data ?? [];
+    },
+    enabled: !!user,
   });
 
   const { data: notifications } = useQuery({
@@ -137,7 +153,7 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-3">
         {/* Enrolled Courses */}
         <Card>
           <CardHeader>
@@ -200,6 +216,46 @@ export default function Dashboard() {
                     )}
                   </Link>
                 ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent Grades */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Recent Grades</CardTitle>
+            <CardDescription>Your latest results</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {!recentGrades?.length ? (
+              <p className="text-sm text-muted-foreground">No graded submissions yet</p>
+            ) : (
+              <div className="space-y-3">
+                {recentGrades.map((sub: any) => {
+                  const pct = sub.assignments?.max_score
+                    ? Math.round((sub.grade / sub.assignments.max_score) * 100)
+                    : 0;
+                  return (
+                    <div key={sub.id} className="rounded-lg border p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium truncate text-sm">{sub.assignments?.title}</p>
+                          <p className="text-xs text-muted-foreground">{sub.assignments?.courses?.title}</p>
+                        </div>
+                        <Badge variant={pct >= 70 ? "default" : pct >= 50 ? "secondary" : "destructive"} className="ml-2 shrink-0">
+                          {sub.grade}/{sub.assignments?.max_score}
+                        </Badge>
+                      </div>
+                      <Progress value={pct} className="h-1.5" />
+                      {sub.graded_at && (
+                        <p className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(sub.graded_at), { addSuffix: true })}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </CardContent>
