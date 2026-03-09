@@ -73,6 +73,7 @@ export function AppSidebar() {
             {!collapsed ? (
               <span className="flex items-center gap-2 text-base font-bold text-primary">
                 <img src={logo} alt="Evlent Education" className="h-8 w-auto" />
+                Evlent Education
               </span>
             ) : (
               <img src={logo} alt="Evlent Education" className="h-6 w-auto" />
