@@ -19,6 +19,13 @@ import Grades from "./pages/Grades";
 import LiveClasses from "./pages/LiveClasses";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
+import TeacherDashboard from "./pages/teacher/TeacherDashboard";
+import TeacherCourses from "./pages/teacher/TeacherCourses";
+import CreateCourse from "./pages/teacher/CreateCourse";
+import TeacherCourseDetail from "./pages/teacher/TeacherCourseDetail";
+import TeacherSubmissions from "./pages/teacher/TeacherSubmissions";
+import AssignmentSubmissions from "./pages/teacher/AssignmentSubmissions";
+import TeacherLiveClasses from "./pages/teacher/TeacherLiveClasses";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +46,7 @@ const App = () => (
 
             {/* Protected routes */}
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+              {/* Student routes */}
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/courses" element={<Courses />} />
               <Route path="/courses/:courseId" element={<CourseDetail />} />
@@ -48,6 +56,15 @@ const App = () => (
               <Route path="/live-classes" element={<LiveClasses />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/profile" element={<Profile />} />
+
+              {/* Teacher routes */}
+              <Route path="/teacher" element={<TeacherDashboard />} />
+              <Route path="/teacher/courses" element={<TeacherCourses />} />
+              <Route path="/teacher/courses/new" element={<CreateCourse />} />
+              <Route path="/teacher/courses/:courseId" element={<TeacherCourseDetail />} />
+              <Route path="/teacher/courses/:courseId/assignments/:assignmentId/submissions" element={<AssignmentSubmissions />} />
+              <Route path="/teacher/submissions" element={<TeacherSubmissions />} />
+              <Route path="/teacher/live-classes" element={<TeacherLiveClasses />} />
             </Route>
 
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
