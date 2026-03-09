@@ -4,9 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, FileText, Video, Clock, ChevronRight } from "lucide-react";
+import { BookOpen, FileText, Video, Clock, ChevronRight, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
+import { useCourseProgress } from "@/hooks/useCourseProgress";
 
 export default function CourseDetail() {
   const { courseId } = useParams();
