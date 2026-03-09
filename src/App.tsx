@@ -26,6 +26,9 @@ import TeacherCourseDetail from "./pages/teacher/TeacherCourseDetail";
 import TeacherSubmissions from "./pages/teacher/TeacherSubmissions";
 import AssignmentSubmissions from "./pages/teacher/AssignmentSubmissions";
 import TeacherLiveClasses from "./pages/teacher/TeacherLiveClasses";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminCourses from "./pages/admin/AdminCourses";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -65,6 +68,11 @@ const App = () => (
               <Route path="/teacher/courses/:courseId/assignments/:assignmentId/submissions" element={<AssignmentSubmissions />} />
               <Route path="/teacher/submissions" element={<TeacherSubmissions />} />
               <Route path="/teacher/live-classes" element={<TeacherLiveClasses />} />
+
+              {/* Admin routes */}
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/users" element={<AdminUsers />} />
+              <Route path="/admin/courses" element={<AdminCourses />} />
             </Route>
 
             <Route path="/" element={<Navigate to="/dashboard" replace />} />

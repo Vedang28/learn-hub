@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, BookOpen, ClipboardCheck, Bell, User, LogOut, Video,
-  PlusCircle, Users, FileEdit, GraduationCap
+  PlusCircle, Users, FileEdit, GraduationCap, ShieldCheck, BarChart3
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
@@ -39,13 +39,22 @@ const teacherNav = [
   { title: "Profile", url: "/profile", icon: User },
 ];
 
+const adminNav = [
+  { title: "Dashboard", url: "/admin", icon: BarChart3 },
+  { title: "Users", url: "/admin/users", icon: Users },
+  { title: "Courses", url: "/admin/courses", icon: BookOpen },
+  { title: "Notifications", url: "/notifications", icon: Bell },
+  { title: "Profile", url: "/profile", icon: User },
+];
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { signOut } = useAuth();
-  const { isTeacher } = useUserRole();
+  const { isTeacher, isAdmin } = useUserRole();
 
-  const navItems = isTeacher ? teacherNav : studentNav;
+  const navItems = isAdmin ? adminNav : isTeacher ? teacherNav : studentNav;
+  const roleLabel = isAdmin ? "Admin" : isTeacher ? "Teacher" : null;
 
   return (
     <Sidebar collapsible="icon">
@@ -62,9 +71,9 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {!collapsed && isTeacher && (
+              {!collapsed && roleLabel && (
                 <div className="px-3 pb-2">
-                  <Badge className="bg-accent text-accent-foreground text-xs">Teacher</Badge>
+                  <Badge className={isAdmin ? "bg-destructive text-destructive-foreground text-xs" : "bg-accent text-accent-foreground text-xs"}>{roleLabel}</Badge>
                 </div>
               )}
               {navItems.map((item) => (
@@ -86,26 +95,32 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* If teacher, also show student portal link */}
-        {isTeacher && (
+        {/* Quick-switch links for elevated roles */}
+        {(isTeacher || isAdmin) && (
           <SidebarGroup>
             <SidebarGroupLabel className="px-4">
-              {!collapsed && <span className="text-xs text-muted-foreground">Student View</span>}
+              {!collapsed && <span className="text-xs text-muted-foreground">Switch View</span>}
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <NavLink
-                      to="/dashboard"
-                      className="hover:bg-sidebar-accent/50"
-                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                    >
+                    <NavLink to="/dashboard" className="hover:bg-sidebar-accent/50" activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium">
                       <GraduationCap className="mr-2 h-4 w-4" />
                       {!collapsed && <span>Student Portal</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                {isAdmin && isTeacher && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink to="/teacher" className="hover:bg-sidebar-accent/50" activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium">
+                        <ShieldCheck className="mr-2 h-4 w-4" />
+                        {!collapsed && <span>Teacher Portal</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
