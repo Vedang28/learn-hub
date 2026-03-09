@@ -4,13 +4,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, FileText, Video, Clock, ChevronRight } from "lucide-react";
+import { BookOpen, FileText, Video, Clock, ChevronRight, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
+import { useCourseProgress } from "@/hooks/useCourseProgress";
 
 export default function CourseDetail() {
   const { courseId } = useParams();
   const { user } = useAuth();
+  const { percentage, completedCount, total, isCompleted } = useCourseProgress(courseId);
 
   const { data: course } = useQuery({
     queryKey: ["course", courseId],
@@ -76,6 +79,23 @@ export default function CourseDetail() {
         <p className="text-muted-foreground mt-1">{course.description}</p>
       </div>
 
+      {/* Progress Card */}
+      <Card>
+        <CardContent className="flex items-center gap-4 p-5">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+            <BookOpen className="h-6 w-6 text-primary" />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-1">
+              <p className="font-medium">Course Progress</p>
+              <span className="text-sm text-muted-foreground">{completedCount}/{total} lessons</span>
+            </div>
+            <Progress value={percentage} className="h-2" />
+          </div>
+          <div className="text-2xl font-bold text-primary">{percentage}%</div>
+        </CardContent>
+      </Card>
+
       <Tabs defaultValue="lessons">
         <TabsList>
           <TabsTrigger value="lessons">Lessons</TabsTrigger>
@@ -94,21 +114,26 @@ export default function CourseDetail() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-1">
-                    {mod.lessons?.sort((a: any, b: any) => a.position - b.position).map((lesson: any) => (
-                      <Link
-                        key={lesson.id}
-                        to={`/courses/${courseId}/lessons/${lesson.id}`}
-                        className="flex items-center gap-3 rounded-lg p-3 hover:bg-muted/50 transition-colors"
-                      >
-                        {lesson.video_url ? (
-                          <Video className="h-4 w-4 text-primary shrink-0" />
-                        ) : (
-                          <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-                        )}
-                        <span className="flex-1 text-sm">{lesson.title}</span>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                      </Link>
-                    ))}
+                    {mod.lessons?.sort((a: any, b: any) => a.position - b.position).map((lesson: any) => {
+                      const completed = isCompleted(lesson.id);
+                      return (
+                        <Link
+                          key={lesson.id}
+                          to={`/courses/${courseId}/lessons/${lesson.id}`}
+                          className="flex items-center gap-3 rounded-lg p-3 hover:bg-muted/50 transition-colors"
+                        >
+                          {completed ? (
+                            <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                          ) : lesson.video_url ? (
+                            <Video className="h-4 w-4 text-muted-foreground shrink-0" />
+                          ) : (
+                            <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                          )}
+                          <span className={`flex-1 text-sm ${completed ? "text-muted-foreground" : ""}`}>{lesson.title}</span>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        </Link>
+                      );
+                    })}
                     {(!mod.lessons || mod.lessons.length === 0) && (
                       <p className="text-sm text-muted-foreground pl-3">No lessons in this module</p>
                     )}

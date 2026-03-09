@@ -2,10 +2,13 @@ import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, CheckCircle2, Circle } from "lucide-react";
+import { useCourseProgress } from "@/hooks/useCourseProgress";
 
 export default function LessonPage() {
   const { courseId, lessonId } = useParams();
+  const { isCompleted, toggleLesson } = useCourseProgress(courseId);
 
   const { data: lesson } = useQuery({
     queryKey: ["lesson", lessonId],
@@ -14,6 +17,8 @@ export default function LessonPage() {
       return data;
     },
   });
+
+  const completed = lessonId ? isCompleted(lessonId) : false;
 
   if (!lesson) {
     return (
@@ -25,9 +30,23 @@ export default function LessonPage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <Link to={`/courses/${courseId}`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="h-4 w-4" /> Back to course
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link to={`/courses/${courseId}`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="h-4 w-4" /> Back to course
+        </Link>
+        <Button
+          variant={completed ? "secondary" : "default"}
+          size="sm"
+          onClick={() => lessonId && toggleLesson.mutate(lessonId)}
+          disabled={toggleLesson.isPending}
+        >
+          {completed ? (
+            <><CheckCircle2 className="h-4 w-4 mr-1" /> Completed</>
+          ) : (
+            <><Circle className="h-4 w-4 mr-1" /> Mark Complete</>
+          )}
+        </Button>
+      </div>
 
       <h1 className="text-3xl font-bold tracking-tight">{lesson.title}</h1>
 
