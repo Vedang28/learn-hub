@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { BookOpen, ClipboardCheck, Video, Bell, Award } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format, formatDistanceToNow } from "date-fns";
+import { EnrolledCourseCard } from "@/components/EnrolledCourseCard";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -169,19 +170,12 @@ export default function Dashboard() {
             ) : (
               <div className="space-y-3">
                 {enrollments.slice(0, 4).map((enrollment: any) => (
-                  <Link
+                  <EnrolledCourseCard
                     key={enrollment.id}
-                    to={`/courses/${enrollment.course_id}`}
-                    className="flex items-center gap-3 rounded-lg border p-3 hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary font-bold text-sm">
-                      {enrollment.courses?.title?.[0] ?? "C"}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{enrollment.courses?.title}</p>
-                      <p className="text-xs text-muted-foreground truncate">{enrollment.courses?.description}</p>
-                    </div>
-                  </Link>
+                    courseId={enrollment.course_id}
+                    title={enrollment.courses?.title}
+                    description={enrollment.courses?.description}
+                  />
                 ))}
               </div>
             )}
