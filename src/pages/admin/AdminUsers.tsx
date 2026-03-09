@@ -121,7 +121,22 @@ export default function AdminUsers() {
     onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
-  const handleCreateUser = async () => {
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const { data, error } = await supabase.functions.invoke("admin-create-user", {
+        body: { action: "delete", user_id: userId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-profiles"] });
+      qc.invalidateQueries({ queryKey: ["admin-all-roles"] });
+      qc.invalidateQueries({ queryKey: ["admin-teacher-students"] });
+      toast({ title: "User account deleted" });
+    },
+    onError: (e: any) => toast({ title: "Error deleting user", description: e.message, variant: "destructive" }),
+  });
     if (!newName || !newEmail || !newPassword) {
       toast({ title: "All fields are required", variant: "destructive" });
       return;
