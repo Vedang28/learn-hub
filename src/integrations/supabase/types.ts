@@ -352,6 +352,27 @@ export type Database = {
           },
         ]
       }
+      teacher_students: {
+        Row: {
+          assigned_at: string
+          id: string
+          student_id: string
+          teacher_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          id?: string
+          student_id: string
+          teacher_id: string
+        }
+        Update: {
+          assigned_at?: string
+          id?: string
+          student_id?: string
+          teacher_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
