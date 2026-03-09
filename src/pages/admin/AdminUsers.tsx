@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
 import { Search, ShieldCheck, UserPlus, Trash2, Link2, Unlink } from "lucide-react";
 import type { AppRole } from "@/hooks/useUserRole";
@@ -118,6 +119,23 @@ export default function AdminUsers() {
       toast({ title: "Student unassigned" });
     },
     onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const { data, error } = await supabase.functions.invoke("admin-create-user", {
+        body: { action: "delete", user_id: userId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-profiles"] });
+      qc.invalidateQueries({ queryKey: ["admin-all-roles"] });
+      qc.invalidateQueries({ queryKey: ["admin-teacher-students"] });
+      toast({ title: "User account deleted" });
+    },
+    onError: (e: any) => toast({ title: "Error deleting user", description: e.message, variant: "destructive" }),
   });
 
   const handleCreateUser = async () => {
@@ -402,15 +420,37 @@ export default function AdminUsers() {
                           )}
                         </TableCell>
                         <TableCell>
-                          {availableRoles.length > 0 && (
-                            <div className="flex gap-1 flex-wrap">
-                              {availableRoles.map((r) => (
-                                <Button key={r} size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => addRoleMutation.mutate({ userId: p.user_id, role: r })}>
-                                  <UserPlus className="h-3 w-3" /> {r}
+                          <div className="flex gap-1 flex-wrap items-center">
+                            {availableRoles.map((r) => (
+                              <Button key={r} size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => addRoleMutation.mutate({ userId: p.user_id, role: r })}>
+                                <UserPlus className="h-3 w-3" /> {r}
+                              </Button>
+                            ))}
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" variant="destructive" className="h-7 text-xs gap-1">
+                                  <Trash2 className="h-3 w-3" /> Delete
                                 </Button>
-                              ))}
-                            </div>
-                          )}
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete User Account</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to permanently delete <strong>{p.name || p.email}</strong>? This will remove their account, roles, enrollments, and all assignments. This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => deleteUserMutation.mutate(p.user_id)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Delete Account
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );

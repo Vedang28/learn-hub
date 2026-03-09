@@ -47,7 +47,50 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { email, password, name, role } = await req.json();
+    const body = await req.json();
+    const action = body.action || "create";
+
+    // ── DELETE USER ──
+    if (action === "delete") {
+      const { user_id } = body;
+      if (!user_id) {
+        return new Response(JSON.stringify({ error: "Missing user_id" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Prevent self-deletion
+      if (user_id === callingUser.id) {
+        return new Response(JSON.stringify({ error: "Cannot delete your own account" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Clean up related data first (teacher_students, user_roles, profile)
+      await adminClient.from("teacher_students").delete().or(`teacher_id.eq.${user_id},student_id.eq.${user_id}`);
+      await adminClient.from("user_roles").delete().eq("user_id", user_id);
+      await adminClient.from("enrollments").delete().eq("student_id", user_id);
+      await adminClient.from("profiles").delete().eq("user_id", user_id);
+
+      // Delete from auth
+      const { error: deleteError } = await adminClient.auth.admin.deleteUser(user_id);
+      if (deleteError) {
+        return new Response(JSON.stringify({ error: deleteError.message }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(
+        JSON.stringify({ success: true }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // ── CREATE USER ──
+    const { email, password, name, role } = body;
 
     if (!email || !password || !name || !role) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
@@ -63,7 +106,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create user with admin client (auto-confirms email)
     const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
       email,
       password,
@@ -78,8 +120,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // The handle_new_user trigger will create profile & assign 'student' role.
-    // If role is 'teacher', add teacher role too.
     if (role === "teacher") {
       await adminClient.from("user_roles").insert({
         user_id: newUser.user.id,
@@ -89,10 +129,7 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({ success: true, user_id: newUser.user.id }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
