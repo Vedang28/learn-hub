@@ -137,6 +137,8 @@ export default function AdminUsers() {
     },
     onError: (e: any) => toast({ title: "Error deleting user", description: e.message, variant: "destructive" }),
   });
+
+  const handleCreateUser = async () => {
     if (!newName || !newEmail || !newPassword) {
       toast({ title: "All fields are required", variant: "destructive" });
       return;
